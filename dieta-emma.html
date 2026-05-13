@@ -1,0 +1,1314 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Dieta Emma</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;1,9..144,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #FAF7F2;
+    --warm-white: #F5F0E8;
+    --sage: #7A9E7E;
+    --sage-light: #A8C4AB;
+    --sage-dark: #4E7253;
+    --terracotta: #C4775A;
+    --terracotta-light: #E8A98F;
+    --gold: #C9A84C;
+    --charcoal: #2C2C2C;
+    --mid-gray: #6B6B6B;
+    --light-gray: #D8D3CA;
+    --card-bg: #FFFFFF;
+    --shadow: 0 2px 20px rgba(44,44,44,0.08);
+    --shadow-md: 0 4px 30px rgba(44,44,44,0.12);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    color: var(--charcoal);
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* ── TOP HEADER ── */
+  .header {
+    background: var(--sage-dark);
+    padding: 56px 24px 24px;
+    padding-top: max(56px, calc(44px + env(safe-area-inset-top)));
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 180px; height: 180px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 50%;
+  }
+  .header::after {
+    content: '';
+    position: absolute;
+    bottom: -60px; left: -20px;
+    width: 140px; height: 140px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 50%;
+  }
+  .header-label {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--sage-light);
+    margin-bottom: 6px;
+  }
+  .header-title {
+    font-family: 'Fraunces', serif;
+    font-size: 32px;
+    font-weight: 300;
+    color: #fff;
+    line-height: 1.15;
+  }
+  .header-title em {
+    font-style: italic;
+    color: var(--terracotta-light);
+  }
+  .header-kcal {
+    margin-top: 14px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 20px;
+    padding: 5px 12px;
+    font-size: 12px;
+    color: #fff;
+    font-weight: 400;
+  }
+  .pill span { font-weight: 600; }
+
+  /* ── TAB BAR ── */
+  .tab-bar {
+    background: var(--card-bg);
+    border-bottom: 1px solid var(--light-gray);
+    display: flex;
+    overflow-x: auto;
+    scrollbar-width: none;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: var(--shadow);
+  }
+  .tab-bar::-webkit-scrollbar { display: none; }
+  .tab-btn {
+    flex-shrink: 0;
+    padding: 14px 18px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--mid-gray);
+    background: none;
+    border: none;
+    cursor: pointer;
+    border-bottom: 2.5px solid transparent;
+    transition: color .2s, border-color .2s;
+    white-space: nowrap;
+  }
+  .tab-btn.active {
+    color: var(--sage-dark);
+    border-bottom-color: var(--sage-dark);
+  }
+
+  /* ── MAIN CONTENT ── */
+  .main { padding: 20px 16px 100px; max-width: 480px; margin: 0 auto; }
+
+  .section { display: none; }
+  .section.active { display: block; }
+
+  /* ── DAY CARD ── */
+  .day-header {
+    font-family: 'Fraunces', serif;
+    font-size: 24px;
+    font-weight: 300;
+    color: var(--charcoal);
+    margin-bottom: 4px;
+  }
+  .day-subtitle {
+    font-size: 12px;
+    color: var(--mid-gray);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 18px;
+  }
+
+  .meal-card {
+    background: var(--card-bg);
+    border-radius: 16px;
+    margin-bottom: 12px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    transition: transform .15s, box-shadow .15s;
+  }
+  .meal-card:active { transform: scale(0.985); box-shadow: var(--shadow-md); }
+
+  .meal-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .meal-icon {
+    width: 38px; height: 38px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .icon-colazione { background: #FFF3E0; }
+  .icon-spuntino  { background: #F1F8E9; }
+  .icon-pranzo    { background: #E8F5E9; }
+  .icon-cena      { background: #E3F2FD; }
+
+  .meal-meta { flex: 1; }
+  .meal-name {
+    font-weight: 500;
+    font-size: 14px;
+    color: var(--charcoal);
+  }
+  .meal-preview {
+    font-size: 12px;
+    color: var(--mid-gray);
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 220px;
+  }
+  .meal-chevron {
+    font-size: 14px;
+    color: var(--light-gray);
+    transition: transform .25s;
+  }
+  .meal-card.open .meal-chevron { transform: rotate(90deg); }
+
+  .meal-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height .35s cubic-bezier(.4,0,.2,1);
+  }
+  .meal-card.open .meal-body { max-height: 600px; }
+  .meal-body-inner {
+    padding: 0 16px 16px;
+    border-top: 1px solid var(--warm-white);
+  }
+
+  .ingredient-list { list-style: none; margin-top: 10px; }
+  .ingredient-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--warm-white);
+    font-size: 14px;
+    line-height: 1.45;
+  }
+  .ingredient-list li:last-child { border-bottom: none; }
+  .ingredient-list li::before {
+    content: '·';
+    color: var(--sage);
+    font-size: 20px;
+    line-height: 1;
+    flex-shrink: 0;
+    margin-top: -2px;
+  }
+  .qty {
+    font-weight: 500;
+    color: var(--sage-dark);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .meal-tip {
+    margin-top: 10px;
+    background: var(--warm-white);
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 12.5px;
+    color: var(--mid-gray);
+    font-style: italic;
+    line-height: 1.5;
+  }
+  .meal-tip::before { content: '💡 '; font-style: normal; }
+
+  /* ── CONSIGLI ── */
+  .advice-card {
+    background: var(--card-bg);
+    border-radius: 16px;
+    margin-bottom: 12px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+  .advice-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .advice-icon {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 17px;
+    flex-shrink: 0;
+  }
+  .advice-title { font-weight: 500; font-size: 14px; flex: 1; }
+  .advice-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height .35s cubic-bezier(.4,0,.2,1);
+  }
+  .advice-card.open .advice-body { max-height: 800px; }
+  .advice-card.open .meal-chevron { transform: rotate(90deg); }
+  .advice-body-inner {
+    padding: 0 16px 16px;
+    border-top: 1px solid var(--warm-white);
+  }
+  .advice-body-inner p {
+    font-size: 13.5px;
+    line-height: 1.65;
+    color: var(--mid-gray);
+    margin-top: 10px;
+  }
+  .avoid-list, .prefer-list {
+    list-style: none;
+    margin-top: 8px;
+  }
+  .avoid-list li, .prefer-list li {
+    font-size: 13.5px;
+    line-height: 1.55;
+    color: var(--mid-gray);
+    padding: 3px 0 3px 20px;
+    position: relative;
+  }
+  .avoid-list li::before { content: '✕'; position: absolute; left: 0; color: var(--terracotta); font-size: 11px; top: 5px; }
+  .prefer-list li::before { content: '✓'; position: absolute; left: 0; color: var(--sage); font-size: 12px; top: 4px; }
+
+  /* ── CHECKLIST ── */
+  .checklist-header {
+    font-family: 'Fraunces', serif;
+    font-size: 22px;
+    font-weight: 300;
+    margin-bottom: 4px;
+  }
+  .checklist-sub {
+    font-size: 12px;
+    color: var(--mid-gray);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 18px;
+  }
+  .check-group {
+    background: var(--card-bg);
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
+  .check-group-title {
+    padding: 12px 16px 8px;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--sage-dark);
+    border-bottom: 1px solid var(--warm-white);
+  }
+  .check-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--warm-white);
+    cursor: pointer;
+    transition: background .15s;
+  }
+  .check-item:last-child { border-bottom: none; }
+  .check-item:active { background: var(--warm-white); }
+  .check-box {
+    width: 22px; height: 22px;
+    border-radius: 6px;
+    border: 2px solid var(--light-gray);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: all .2s;
+  }
+  .check-item.checked .check-box {
+    background: var(--sage);
+    border-color: var(--sage);
+  }
+  .check-item.checked .check-box::after { content: '✓'; color: #fff; font-size: 13px; font-weight: 600; }
+  .check-label {
+    font-size: 14px;
+    color: var(--charcoal);
+    line-height: 1.4;
+    transition: color .2s;
+  }
+  .check-item.checked .check-label {
+    color: var(--mid-gray);
+    text-decoration: line-through;
+  }
+  .progress-bar-wrap {
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 14px 16px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow);
+  }
+  .progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    margin-bottom: 8px;
+  }
+  .progress-label span:first-child { color: var(--mid-gray); }
+  .progress-label span:last-child { font-weight: 500; color: var(--sage-dark); }
+  .progress-bar {
+    height: 8px;
+    background: var(--warm-white);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--sage-light), var(--sage-dark));
+    border-radius: 4px;
+    transition: width .4s cubic-bezier(.4,0,.2,1);
+  }
+  .reset-btn {
+    margin-top: 10px;
+    width: 100%;
+    padding: 10px;
+    background: none;
+    border: 1.5px solid var(--light-gray);
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: var(--mid-gray);
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .reset-btn:active { background: var(--warm-white); }
+
+  /* ── BOTTOM NAV ── */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-top: 1px solid var(--light-gray);
+    display: flex;
+    padding-bottom: env(safe-area-inset-bottom);
+    z-index: 200;
+  }
+  .nav-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    padding: 10px 4px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 10px;
+    color: var(--mid-gray);
+    transition: color .2s;
+  }
+  .nav-btn .nav-icon { font-size: 22px; }
+  .nav-btn.active { color: var(--sage-dark); }
+  .nav-btn.active .nav-dot {
+    width: 4px; height: 4px;
+    background: var(--sage-dark);
+    border-radius: 50%;
+    margin: 0 auto;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-label">Piano Alimentare</div>
+  <div class="header-title">Dieta <em>Emma</em></div>
+  <div class="header-kcal">
+    <div class="pill">🔥 <span>1500</span> kcal/giorno</div>
+    <div class="pill">🌾 <span>45%</span> Carboidrati</div>
+    <div class="pill">🥩 <span>20%</span> Proteine</div>
+    <div class="pill">🫒 <span>30%</span> Grassi</div>
+  </div>
+</div>
+
+<div class="tab-bar" id="tabBar">
+  <button class="tab-btn active" data-tab="g1">Giorno 1</button>
+  <button class="tab-btn" data-tab="g2">Giorno 2</button>
+  <button class="tab-btn" data-tab="g3">Giorno 3</button>
+  <button class="tab-btn" data-tab="g4">Giorno 4</button>
+  <button class="tab-btn" data-tab="sabato">Sabato</button>
+  <button class="tab-btn" data-tab="domenica">Domenica</button>
+</div>
+
+<div class="main">
+
+  <!-- GIORNO 1 -->
+  <div class="section active" id="g1">
+    <div class="day-header">Giorno 1</div>
+    <div class="day-subtitle">Giorno normale</div>
+
+    <div class="meal-card" onclick="toggleMeal(this)">
+      <div class="meal-header">
+        <div class="meal-icon icon-colazione">🌅</div>
+        <div class="meal-meta">
+          <div class="meal-name">Colazione</div>
+          <div class="meal-preview">Fette integrali, yogurt greco, mirtilli</div>
+        </div>
+        <div class="meal-chevron">›</div>
+      </div>
+      <div class="meal-body"><div class="meal-body-inner">
+        <ul class="ingredient-list">
+          <li><span class="qty">50 g</span> fette di pane integrale (preferibilmente tostato)</li>
+          <li><span class="qty">100 g</span> yogurt greco (come strato e topping)</li>
+          <li><span class="qty">60 g</span> mirtilli</li>
+          <li><span class="qty">1 cucchiaino</span> burro d'arachidi 100%</li>
+        </ul>
+      </div></div>
+    </div>
+
+    <div class="meal-card" onclick="toggleMeal(this)">
+      <div class="meal-header">
+        <div class="meal-icon icon-spuntino">🍎</div>
+        <div class="meal-meta">
+          <div class="meal-name">Spuntino Mattina</div>
+          <div class="meal-preview">Mela + mandorle</div>
+        </div>
+        <div class="meal-chevron">›</div>
+      </div>
+      <div class="meal-body"><div class="meal-body-inner">
+        <ul class="ingredient-list">
+          <li><span class="qty">1</span> mela</li>
+          <li><span class="qty">8</span> mandorle</li>
+        </ul>
+      </div></div>
+    </div>
+
+    <div class="meal-card" onclick="toggleMeal(this)">
+      <div class="meal-header">
+        <div class="meal-icon icon-pranzo">🍝</div>
+        <div class="meal-meta">
+          <div class="meal-name">Pranzo</div>
+          <div class="meal-preview">Pasta con lenticchie e spinaci</div>
+        </div>
+        <div class="meal-chevron">›</div>
+      </div>
+      <div class="meal-body"><div class="meal-body-inner">
+        <ul class="ingredient-list">
+          <li><span class="qty">60 g</span> pasta</li>
+          <li><span class="qty">120 g</span> lenticchie</li>
+          <li>spinaci o verdura cotta a piacere</li>
+          <li><span class="qty">2 cucchiaini</span> olio EVO</li>
+        </ul>
+      </div></div>
+    </div>
+
+    <div class="meal-card" onclick="toggleMeal(this)">
+      <div class="meal-header">
+        <div class="meal-icon icon-spuntino">🍫</div>
+        <div class="meal-meta">
+          <div class="meal-name">Spuntino Pomeriggio</div>
+          <div class="meal-preview">Barretta Misura + cioccolato fondente</div>
+        </div>
+        <div class="meal-chevron">›</div>
+      </div>
+      <div class="meal-body"><div class="meal-body-inner">
+        <ul class="ingredient-list">
+          <li><span class="qty">1</span> barretta cioccolato fondente o frutti rossi "Misura" Eurospin (senza zuccheri aggiunti)</li>
+          <li><span class="qty">20 g</span> cioccolato fondente</li>
+        </ul>
+      </div></div>
+    </div>
+
+    <div class="meal-card" onclick="toggleMeal(this)">
+      <div class="meal-header">
+        <div class="meal-icon icon-cena">🐟</div>
+        <div class="meal-meta">
+          <div class="meal-name">Cena</div>
+          <div class="meal-preview">Merluzzo con patate e fagiolini</div>
+        </div>
+        <div class="meal-chevron">›</div>
+      </div>
+      <div class="meal-body"><div class="meal-body-inner">
+        <ul class="ingredient-list">
+          <li><span class="qty">300 g</span> patate al vapore o al forno</li>
+          <li><span class="qty">150 g</span> merluzzo</li>
+          <li><span class="qty">100 g</span> fagiolini</li>
+          <li><span class="qty">2 cucchiaini</span> olio EVO</li>
+        </ul>
+        <div class="meal-tip">Idea tortino: mescola patate e merluzzo con un po' di pepe e 1 cucchiaio di pangrattato.</div>
+      </div></div>
+    </div>
+  </div>
+
+  <!-- GIORNO 2 -->
+  <div class="section" id="g2">
+    <div class="day-header">Giorno 2</div>
+    <div class="day-subtitle">Giorno normale</div>
+
+    <div class="meal-card" onclick="toggleMeal(this)">
+      <div class="meal-header">
+        <div class="meal-icon icon-colazione">🌅</div>
+        <div class="meal-meta">
+          <div class="meal-name">Colazione</div>
+          <div class="meal-preview">Latte + cereali Misura extrafondente</div>
+        </div>
+        <div class="meal-chevron">›</div>
+      </div>
+      <div class="meal-body"><div class="meal-body-inner">
+        <ul class="ingredient-list">
+          <li><span class="qty">150 ml</span> latte parzialmente scremato</li>
+          <li><span class="qty">30 g</span> cereali Misura extrafondente o frutti rossi</li>
+        </ul>
+      </div></div>
+    </div>
+
+    <div class="meal-card" onclick="toggleMeal(this)">
+      <div class="meal-header">
+        <div class="meal-icon icon-spuntino">🥝</div>
+        <div class="meal-meta">
+          <div class="meal-name">Spuntino Mattina</div>
+          <div class="meal-preview">Kiwi + noci</div>
+        </div>
+        <div class="meal-chevron">›</div>
+      </div>
+      <div class="meal-body"><div class="meal-body-inner">
+        <ul class="ingredient-list">
+          <li><span class="qty">2</span> kiwi o 150 g frutta a piacere</li>
+          <li><span class="qty">2</span> noci</li>
+        </ul>
+        <div class="meal-tip">Evitare: banana, cachi, fichi, uva, fichi d'india.</div>
+      </div></div>
+    </div>
+
+    <div class="meal-card" onclick="toggleMeal(this)">
+      <div class="meal-header">
+        <div class="meal-icon icon-pranzo">🍝</div>
+        <div class="meal-meta">
+          <div class="meal-name">Pranzo</div>
+          <div class="meal-preview">Pasta al ragù di vitello</div>
+        </div>
+        <div class="meal-chevron">›</div>
+      </div>
+      <div class="meal-body"><div class="meal-body-inner">
+        <ul class="ingredient-list">
+          <li><span class="qty">80 g</span> pasta</li>
+          <li><span class="qty">80 g</span> sugo e basilico</li>
+          <li><span class="qty">100 g</span> macinato di vitello magro</li>
+          <li>insalata</li>
+          <li><span class="qty">2 cucchiaini</span> olio EVO</li>
+        </ul>
+      </div></div>
+    </div>
+
+    <div class="meal-card" onclick="toggleMeal(this)">
+      <div class="meal-header">
+        <div class="meal-icon icon-spuntino">💪</div>
+        <div class="meal-meta">
+          <div class="meal-name">Spuntino Pomeriggio</div>
+          <div class="meal-preview">Budino proteico My Protein + frutta secca</div>
+        </div>
+        <div class="meal-chevron">›</div>
+      </div>
+      <div class="meal-body"><div class="meal-body-inner">
+        <ul class="ingredient-list">
+          <li><span class="qty">1</span> budino proteico "My Protein"</li>
+          <li><span class="qty">8</span> mandorle o 2 noci</li>
+        </ul>
+      </div></div>
+    </div>
+
+    <div class="meal-card" onclick="toggleMeal(this)">
+      <div class="meal-header">
+        <div class="meal-icon icon-cena">🥑</div>
+        <div class="meal-meta">
+          <div class="meal-name">Cena</div>
+          <div class="meal-preview">Avocado toast con uova</div>
+        </div>
+        <div class="meal-chevron">›</div>
+      </div>
+      <div class="meal-body"><div class="meal-body-inner">
+        <ul class="ingredient-list">
+          <li><span class="qty">80 g</span> pane tostato</li>
+          <li><span class="qty">50 g</span> avocado</li>
+          <li><span class="qty">2</span> uova intere o strapazzate</li>
+          <li>insalata e pomodori (contorno)</li>
+          <li><span class="qty">1 cucchiaino</span> olio EVO</li>
+        </ul>
+      </div></div>
+    </div>
+  </div>
+
+  <!-- GIORNO 3 -->
+  <div class="section" id="g3">
+    <div class="day-header">Giorno 3</div>
+    <div class="day-subtitle">Giorno normale</div>
+
+    <div class="meal-card" onclick="toggleMeal(this)">
+      <div class="meal-header">
+        <div class="meal-icon icon-colazione">🥞</div>
+        <div class="meal-meta">
+          <div class="meal-name">Colazione</div>
+          <div class="meal-preview">Pancake di avena e banana</div>
+        </div>
+        <div class="meal-chevron">›</div>
+      </div>
+      <div class="meal-body"><div class="meal-body-inner">
+        <ul class="ingredient-list">
+          <li><span class="qty">40 g</span> farina d'avena</li>
+          <li><span class="qty">½</span> banana schiacciata</li>
+          <li><span class="qty">2</span> albumi</li>
+          <li><span class="qty">1 pizzico</span> bicarbonato + succo di limone (per lievitazione)</li>
+          <li><span class="qty">1 cucchiaio</span> cacao (opzionale, per pancake al cioccolato)</li>
+        </ul>
+        <div class="meal-tip">Topping: cremina di cacao amaro (1 cucchiaio cacao + acqua q.b.) + 1 cucchiaio marmellata Hero Light a piacere.</div>
+      </div></div>
+    </div>
+
+    <div class="meal-card" onclick="toggleMeal(this)">
+      <div class="meal-header">
+        <div class="meal-icon icon-spuntino">🥝</div>
+        <div class="meal-meta">
+          <div class="meal-name">Spuntino Mattina</div>
+          <div class="meal-preview">Solo se hai fame</div>
+        </div>
+        <div class="meal-chevron">›</div>
+      </div>
+      <div class="meal-body"><div class="meal-body-inner">
+        <ul class="ingredient-list">
+          <li><span class="qty">1</span> kiwi</li>
+          <li><span class="qty">1</span> noce</li>
+        </ul>
+      </div></div>
+    </div>
+
+    <div class="meal-card" onclick="toggleMeal(this)">
+      <div class="meal-header">
+        <div class="meal-icon icon-pranzo">🍝</div>
+        <div class="meal-meta">
+          <div class="meal-name">Pranzo</div>
+          <div class="meal-preview">Pasta con lenticchie e bietole</div>
+        </div>
+        <div class="meal-chevron">›</div>
+      </div>
+      <div class="meal-body"><div class="meal-body-inner">
+        <ul class="ingredient-list">
+          <li><span class="qty">60 g</span> pasta</li>
+          <li><span class="qty">120 g</span> lenticchie</li>
+          <li>bietole o verdura cotta a piacere</li>
+          <li><span class="qty">1 cucchiaino</span> olio EVO</li>
+        </ul>
+      </div></div>
+    </div>
+
+    <div class="meal-card" onclick="toggleMeal(this)">
+      <div class="meal-header">
+        <div class="meal-icon icon-spuntino">🥕</div>
+        <div class="meal-meta">
+          <div class="meal-name">Spuntino Pomeriggio</div>
+          <div class="meal-preview">Carote, sedano e fiocchi di latte</div>
+        </div>
+        <div class="meal-chevron">›</div>
+      </div>
+      <div class="meal-body"><div class="meal-body-inner">
+        <ul class="ingredient-list">
+          <li>carote e sedano</li>
+          <li><span class="qty">½ confezione</span> fiocchi di latte proteici</li>
+        </ul>
+      </div></div>
+    </div>
+
+    <div class="meal-card" onclick="toggleMeal(this)">
+      <div class="meal-header">
+        <div class="meal-icon icon-cena">🫓</div>
+        <div class="meal-meta">
+          <div class="meal-name">Cena</div>
+          <div class="meal-preview">Wrap con pollo e verdure</div>
+        </div>
+        <div class="meal-chevron">›</div>
+      </div>
+      <div class="meal-body"><div class="meal-body-inner">
+        <ul class="ingredient-list">
+          <li><span class="qty">1</span> piadina senza strutto integrale (pochi grassi)</li>
+          <li><span class="qty">100 g</span> petto di pollo con spezie (paprika o curry)</li>
+          <li>insalata e pomodori</li>
+          <li><span class="qty">2 cucchiaini</span> olio EVO</li>
+        </ul>
+      </div></div>
+    </div>
+  </div>
+
+  <!-- GIORNO 4 -->
+  <div class="section" id="g4">
+    <div class="day-header">Giorno 4</div>
+    <div class="day-subtitle">Colazione e spuntino insieme</div>
+
+    <div class="meal-card" onclick="toggleMeal(this)">
+      <div class="meal-header">
+        <div class="meal-icon icon-colazione">🥪</div>
+        <div class="meal-meta">
+          <div class="meal-name">Colazione + Spuntino</div>
+          <div class="meal-preview">Toast con fesa di pollo</div>
+        </div>
+        <div class="meal-chevron">›</div>
+      </div>
+      <div class="meal-body"><div class="meal-body-inner">
+        <ul class="ingredient-list">
+          <li><span class="qty">50 g (2 fette)</span> pane tostato</li>
+          <li><span class="qty">80 g</span> fesa di pollo confezionata</li>
+          <li>insalata e pomodori</li>
+        </ul>
+      </div></div>
+    </div>
+
+    <div class="meal-card" onclick="toggleMeal(this)">
+      <div class="meal-header">
+        <div class="meal-icon icon-pranzo">🍝</div>
+        <div class="meal-meta">
+          <div class="meal-name">Pranzo</div>
+          <div class="meal-preview">Gnocchetti con fiocchi di latte</div>
+        </div>
+        <div class="meal-chevron">›</div>
+      </div>
+      <div class="meal-body"><div class="meal-body-inner">
+        <ul class="ingredient-list">
+          <li><span class="qty">100 g</span> gnocchetti</li>
+          <li><span class="qty">½ confezione</span> fiocchi di latte proteici</li>
+          <li>verdura a piacere <em>oppure</em> 70 g sugo senza soffritto + basilico</li>
+          <li>insalata</li>
+          <li><span class="qty">1 cucchiaino</span> olio EVO</li>
+        </ul>
+      </div></div>
+    </div>
+
+    <div class="meal-card" onclick="toggleMeal(this)">
+      <div class="meal-header">
+        <div class="meal-icon icon-spuntino">🫙</div>
+        <div class="meal-meta">
+          <div class="meal-name">Spuntino Pomeriggio</div>
+          <div class="meal-preview">Yogurt greco, mirtilli, burro d'arachidi</div>
+        </div>
+        <div class="meal-chevron">›</div>
+      </div>
+      <div class="meal-body"><div class="meal-body-inner">
+        <ul class="ingredient-list">
+          <li>yogurt greco magro</li>
+          <li><span class="qty">50 g</span> mirtilli</li>
+          <li><span class="qty">1 cucchiaino</span> burro d'arachidi 100%</li>
+        </ul>
+      </div></div>
+    </div>
+
+    <div class="meal-card" onclick="toggleMeal(this)">
+      <div class="meal-header">
+        <div class="meal-icon icon-cena">🐟</div>
+        <div class="meal-meta">
+          <div class="meal-name">Cena</div>
+          <div class="meal-preview">Cous cous con tonno e peperoni</div>
+        </div>
+        <div class="meal-chevron">›</div>
+      </div>
+      <div class="meal-body"><div class="meal-body-inner">
+        <ul class="ingredient-list">
+          <li><span class="qty">60 g</span> cous cous</li>
+          <li>peperoni o altra verdura a piacere</li>
+          <li><span class="qty">120 g</span> tonno in scatola</li>
+          <li><span class="qty">1 cucchiaino</span> olio EVO</li>
+        </ul>
+      </div></div>
+    </div>
+  </div>
+
+  <!-- SABATO -->
+  <div class="section" id="sabato">
+    <div class="day-header">Sabato</div>
+    <div class="day-subtitle">Con libera uscita a cena 🍕</div>
+
+    <div class="meal-card" onclick="toggleMeal(this)">
+      <div class="meal-header">
+        <div class="meal-icon icon-colazione">🌿</div>
+        <div class="meal-meta">
+          <div class="meal-name">Colazione + Spuntino</div>
+          <div class="meal-preview">Porridge antinfiammatorio</div>
+        </div>
+        <div class="meal-chevron">›</div>
+      </div>
+      <div class="meal-body"><div class="meal-body-inner">
+        <ul class="ingredient-list">
+          <li><span class="qty">30 g</span> fiocchi d'avena (cuocere con 3 dita d'acqua a fuoco basso fino a bollore)</li>
+          <li><span class="qty">1 manciata</span> frutti rossi (topping)</li>
+          <li><span class="qty">1</span> noce (topping)</li>
+        </ul>
+      </div></div>
+    </div>
+
+    <div class="meal-card" onclick="toggleMeal(this)">
+      <div class="meal-header">
+        <div class="meal-icon icon-pranzo">🦐</div>
+        <div class="meal-meta">
+          <div class="meal-name">Pranzo</div>
+          <div class="meal-preview">Riso basmati con insalata di mare</div>
+        </div>
+        <div class="meal-chevron">›</div>
+      </div>
+      <div class="meal-body"><div class="meal-body-inner">
+        <ul class="ingredient-list">
+          <li><span class="qty">60 g</span> riso basmati</li>
+          <li><span class="qty">100 g</span> insalata di mare + 1 cucchiaio olio EVO</li>
+        </ul>
+        <div class="meal-tip">In alternativa: 100 g gamberetti sgusciati con verdura a piacere.</div>
+      </div></div>
+    </div>
+
+    <div class="meal-card" onclick="toggleMeal(this)">
+      <div class="meal-header">
+        <div class="meal-icon icon-spuntino">🫙</div>
+        <div class="meal-meta">
+          <div class="meal-name">Spuntino Pomeriggio</div>
+          <div class="meal-preview">Yogurt greco, noci, marmellata</div>
+        </div>
+        <div class="meal-chevron">›</div>
+      </div>
+      <div class="meal-body"><div class="meal-body-inner">
+        <ul class="ingredient-list">
+          <li><span class="qty">1</span> yogurt greco magro</li>
+          <li><span class="qty">2</span> noci</li>
+          <li><span class="qty">2 cucchiaini</span> marmellata Hero Light</li>
+        </ul>
+      </div></div>
+    </div>
+
+    <div class="meal-card" onclick="toggleMeal(this)">
+      <div class="meal-header">
+        <div class="meal-icon icon-cena">🍕</div>
+        <div class="meal-meta">
+          <div class="meal-name">Cena</div>
+          <div class="meal-preview">Pizza! 🎉</div>
+        </div>
+        <div class="meal-chevron">›</div>
+      </div>
+      <div class="meal-body"><div class="meal-body-inner">
+        <ul class="ingredient-list">
+          <li>pizza margherita / prosciutto e funghi</li>
+          <li>1 Coca Zero <em>oppure</em> 1 bicchiere di vino</li>
+          <li>verdure grigliate come antipasto (facoltativo)</li>
+        </ul>
+        <div class="meal-tip">Evitare fritture, superalcolici e bevande gassate.</div>
+      </div></div>
+    </div>
+  </div>
+
+  <!-- DOMENICA -->
+  <div class="section" id="domenica">
+    <div class="day-header">Domenica</div>
+    <div class="day-subtitle">Giorno libero con cura 🌿</div>
+
+    <div class="meal-card" onclick="toggleMeal(this)">
+      <div class="meal-header">
+        <div class="meal-icon icon-colazione">🍓</div>
+        <div class="meal-meta">
+          <div class="meal-name">Colazione / Spuntino</div>
+          <div class="meal-preview">Frutta fresca e mandorle</div>
+        </div>
+        <div class="meal-chevron">›</div>
+      </div>
+      <div class="meal-body"><div class="meal-body-inner">
+        <ul class="ingredient-list">
+          <li><span class="qty">150 g</span> frutta fresca</li>
+          <li><span class="qty">8</span> mandorle</li>
+        </ul>
+      </div></div>
+    </div>
+
+    <div class="meal-card" onclick="toggleMeal(this)">
+      <div class="meal-header">
+        <div class="meal-icon icon-pranzo">🍽️</div>
+        <div class="meal-meta">
+          <div class="meal-name">Pranzo</div>
+          <div class="meal-preview">Primo a scelta + secondo magro</div>
+        </div>
+        <div class="meal-chevron">›</div>
+      </div>
+      <div class="meal-body"><div class="meal-body-inner">
+        <ul class="ingredient-list">
+          <li>primo a scelta con secondo a base di carne o pesce magro</li>
+          <li><em>oppure</em> pasta con cozze, gamberetti o pezzetti al sugo</li>
+          <li>verdura cruda e cotta a piacere come contorno</li>
+          <li>gelato coppetta piccola (concesso ✓)</li>
+        </ul>
+        <div class="meal-tip">Evitare pasti abbondanti, fritture e bevande gassate.</div>
+      </div></div>
+    </div>
+
+    <div class="meal-card" onclick="toggleMeal(this)">
+      <div class="meal-header">
+        <div class="meal-icon icon-cena">🥗</div>
+        <div class="meal-meta">
+          <div class="meal-name">Cena</div>
+          <div class="meal-preview">Insalatona detox al tonno</div>
+        </div>
+        <div class="meal-chevron">›</div>
+      </div>
+      <div class="meal-body"><div class="meal-body-inner">
+        <ul class="ingredient-list">
+          <li><span class="qty">2 scatolette piccole</span> tonno al naturale</li>
+          <li>insalata</li>
+          <li><span class="qty">1 cucchiaino</span> olio EVO</li>
+          <li>verdure crude e cotte a piacere</li>
+        </ul>
+      </div></div>
+    </div>
+  </div>
+
+  <!-- SEZIONE CONSIGLI -->
+  <div class="section" id="consigli">
+    <div class="day-header">Consigli</div>
+    <div class="day-subtitle">Indicazioni nutrizionali</div>
+
+    <div class="advice-card" onclick="toggleAdvice(this)">
+      <div class="advice-header">
+        <div class="advice-icon" style="background:#E8F5E9">🫒</div>
+        <div class="advice-title">Condimenti</div>
+        <div class="meal-chevron">›</div>
+      </div>
+      <div class="advice-body"><div class="advice-body-inner">
+        <p>Utilizzare olio extravergine d'oliva (1 cucchiaio a pranzo + 1 a cena), succo di limone, aceto di mele, erbe aromatiche (basilico, rosmarino, salvia, menta) e spezie (curcuma, zenzero, cumino, cannella, curry). Limitare il sale.</p>
+      </div></div>
+    </div>
+
+    <div class="advice-card" onclick="toggleAdvice(this)">
+      <div class="advice-header">
+        <div class="advice-icon" style="background:#FFF8E1">🍬</div>
+        <div class="advice-title">Zucchero e dolcificanti</div>
+        <div class="meal-chevron">›</div>
+      </div>
+      <div class="advice-body"><div class="advice-body-inner">
+        <p>Limitare lo zucchero. No marmellate zuccherate. Preferire Stevia 100 (farmacia/erboristeria) o Truvia (Eridania), Zero, Dietor senza aspartame, Dietor Stevia.</p>
+      </div></div>
+    </div>
+
+    <div class="advice-card" onclick="toggleAdvice(this)">
+      <div class="advice-header">
+        <div class="advice-icon" style="background:#E3F2FD">🍳</div>
+        <div class="advice-title">Metodi di cottura</div>
+        <div class="meal-chevron">›</div>
+      </div>
+      <div class="advice-body"><div class="advice-body-inner">
+        <p>Non sono ammessi fritti e soffritti. Prediligere cottura al vapore, al forno, in padella antiaderente con acqua e olio a crudo.</p>
+      </div></div>
+    </div>
+
+    <div class="advice-card" onclick="toggleAdvice(this)">
+      <div class="advice-header">
+        <div class="advice-icon" style="background:#E1F5FE">💧</div>
+        <div class="advice-title">Bevande</div>
+        <div class="meal-chevron">›</div>
+      </div>
+      <div class="advice-body"><div class="advice-body-inner">
+        <p>Bere almeno 1,5 L di acqua al giorno. Si consiglia di bere durante il giorno tisane (soprattutto drenanti e sgonfianti).</p>
+        <ul class="avoid-list">
+          <li>Bevande gassate</li>
+          <li>Succhi di frutta</li>
+          <li>Bevande zuccherate</li>
+          <li>Alcool (eccetto 1 bicchiere di vino il sabato)</li>
+          <li>Tè in bottiglia, birra</li>
+        </ul>
+      </div></div>
+    </div>
+
+    <div class="advice-card" onclick="toggleAdvice(this)">
+      <div class="advice-header">
+        <div class="advice-icon" style="background:#F1F8E9">🥦</div>
+        <div class="advice-title">Frutta e verdura</div>
+        <div class="meal-chevron">›</div>
+      </div>
+      <div class="advice-body"><div class="advice-body-inner">
+        <p>Tutti gli ortaggi e le verdure sono sostituibili con ciò che piace di più! <strong>In questa prima fase evitare:</strong></p>
+        <ul class="avoid-list">
+          <li>Banane, castagne, uva, fichi, cachi</li>
+          <li>Mais, carote cotte, patate (solo in questa fase)</li>
+        </ul>
+      </div></div>
+    </div>
+
+    <div class="advice-card" onclick="toggleAdvice(this)">
+      <div class="advice-header">
+        <div class="advice-icon" style="background:#FCE4EC">🥩</div>
+        <div class="advice-title">Salumi e formaggi</div>
+        <div class="meal-chevron">›</div>
+      </div>
+      <div class="advice-body"><div class="advice-body-inner">
+        <p><strong>Evitare:</strong></p>
+        <ul class="avoid-list">
+          <li>Mortadella, salame, salsiccia, würstel, coppa, prosciutto</li>
+          <li>Formaggi grassi stagionati, fermentati e freschi</li>
+        </ul>
+        <p><strong>Preferire:</strong></p>
+        <ul class="prefer-list">
+          <li>Fesa di tacchino/pollo, bresaola magra</li>
+          <li>Primo sale, ricotta, fiocchi di latte</li>
+          <li>Formaggio spalmabile con max 5% di grassi</li>
+        </ul>
+      </div></div>
+    </div>
+
+    <div class="advice-card" onclick="toggleAdvice(this)">
+      <div class="advice-header">
+        <div class="advice-icon" style="background:#E0F7FA">🐟</div>
+        <div class="advice-title">Pesce consigliato</div>
+        <div class="meal-chevron">›</div>
+      </div>
+      <div class="advice-body"><div class="advice-body-inner">
+        <ul class="prefer-list">
+          <li>Pesce azzurro pescato di piccola taglia</li>
+          <li>Merluzzo, sogliola, pescatrice, rombo, sarago</li>
+          <li>Calamari, totani, polpo, seppie</li>
+          <li>Gamberetti, cozze, vongole, frutti di mare</li>
+          <li>Salmone, pesce spada, tonno</li>
+          <li>Carpaccio di pesce</li>
+        </ul>
+        <div class="meal-tip">Evitare pesci d'allevamento. Va bene anche il pesce surgelato o in scatola al naturale.</div>
+      </div></div>
+    </div>
+
+    <div class="advice-card" onclick="toggleAdvice(this)">
+      <div class="advice-header">
+        <div class="advice-icon" style="background:#FFF3E0">⚠️</div>
+        <div class="advice-title">Alimenti da evitare</div>
+        <div class="meal-chevron">›</div>
+      </div>
+      <div class="advice-body"><div class="advice-body-inner">
+        <ul class="avoid-list">
+          <li>Burro, strutto, margarina, panna, maionese, ketchup</li>
+          <li>Fritture</li>
+          <li>Merendine, crackers, pan carré, biscotti, grissini, salatini, patatine</li>
+          <li>Dolci, caramelle, cioccolate (eccetto fondente consentito)</li>
+          <li>Succhi di frutta, tè in bottiglia, birra, alcolici, bevande gassate</li>
+        </ul>
+      </div></div>
+    </div>
+
+    <div class="advice-card" onclick="toggleAdvice(this)">
+      <div class="advice-header">
+        <div class="advice-icon" style="background:#EDE7F6">🧘</div>
+        <div class="advice-title">Buone norme</div>
+        <div class="meal-chevron">›</div>
+      </div>
+      <div class="advice-body"><div class="advice-body-inner">
+        <ul class="prefer-list">
+          <li>Evitare i pasti abbondanti, preferire pasti piccoli e frequenti</li>
+          <li>Assumere i pasti ad orari regolari</li>
+          <li>Mangiare seduti a tavola, non in piedi</li>
+          <li>Masticare lentamente</li>
+          <li>Dare il giusto tempo al cibo</li>
+        </ul>
+      </div></div>
+    </div>
+  </div>
+
+  <!-- CHECKLIST -->
+  <div class="section" id="checklist">
+    <div class="checklist-header">Lista della spesa</div>
+    <div class="checklist-sub">Segna cosa hai già</div>
+
+    <div class="progress-bar-wrap">
+      <div class="progress-label">
+        <span>Completato</span>
+        <span id="progressText">0 / 0</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+      <button class="reset-btn" onclick="resetChecklist()">↺ Azzera lista</button>
+    </div>
+
+    <div class="check-group">
+      <div class="check-group-title">🌾 Carboidrati & Cereali</div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-label">Pane integrale</div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-label">Pasta (varie formati)</div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-label">Riso basmati</div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-label">Gnocchetti</div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-label">Cous cous</div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-label">Farina d'avena</div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-label">Fiocchi d'avena</div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-label">Cereali Misura extrafondente o frutti rossi</div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-label">Piadina integrale senza strutto</div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-label">Pangrattato</div></div>
+    </div>
+
+    <div class="check-group">
+      <div class="check-group-title">🥩 Proteine</div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-label">Yogurt greco magro</div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-label">Fiocchi di latte proteici</div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-label">Uova</div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-label">Petto di pollo</div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-label">Fesa di pollo confezionata</div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-label">Macinato di vitello magro</div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-label">Merluzzo</div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-label">Tonno in scatola al naturale</div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-label">Insalata di mare / gamberetti</div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-label">Budino proteico My Protein</div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-label">Latte parz. scremato</div></div>
+    </div>
+
+    <div class="check-group">
+      <div class="check-group-title">🥦 Frutta & Verdura</div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-label">Mirtilli</div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-label">Mela</div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-label">Kiwi</div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-label">Banana (½ per i pancake)</div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-label">Frutti rossi</div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-label">Avocado</div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-label">Spinaci</div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-label">Fagiolini</div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-label">Patate</div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-label">Peperoni</div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-label">Carote e sedano</div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-label">Pomodori e insalata</div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-label">Bietole</div></div>
+    </div>
+
+    <div class="check-group">
+      <div class="check-group-title">🫙 Dispensa</div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-label">Lenticchie (secche o in scatola)</div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-label">Sugo senza soffritto</div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-label">Olio EVO</div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-label">Burro d'arachidi 100%</div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-label">Cioccolato fondente</div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-label">Cacao amaro</div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-label">Marmellata Hero Light</div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-label">Barretta Misura Eurospin (senza zuccheri)</div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-label">Bicarbonato + limone</div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-label">Spezie (paprika, curry, curcuma, cannella…)</div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-label">Stevia / Truvia / Dolcificante senza aspartame</div></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+  <button class="nav-btn" id="nav-giorni" onclick="showNav('giorni')">
+    <div class="nav-icon">📅</div>
+    <div>Piano</div>
+  </button>
+  <button class="nav-btn" id="nav-consigli" onclick="showNav('consigli')">
+    <div class="nav-icon">💡</div>
+    <div>Consigli</div>
+  </button>
+  <button class="nav-btn" id="nav-spesa" onclick="showNav('spesa')">
+    <div class="nav-icon">🛒</div>
+    <div>Spesa</div>
+  </button>
+</div>
+
+<script>
+  const DAYS = ['g1','g2','g3','g4','sabato','domenica'];
+  let currentNav = 'giorni';
+  let currentDay = 'g1';
+
+  function toggleMeal(card) {
+    card.classList.toggle('open');
+  }
+  function toggleAdvice(card) {
+    card.classList.toggle('open');
+  }
+
+  // Tab switching
+  document.getElementById('tabBar').addEventListener('click', function(e) {
+    const btn = e.target.closest('.tab-btn');
+    if (!btn) return;
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const tab = btn.dataset.tab;
+    currentDay = tab;
+    DAYS.forEach(d => {
+      document.getElementById(d).classList.toggle('active', d === tab);
+    });
+  });
+
+  function showNav(nav) {
+    currentNav = nav;
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    const tabBar = document.getElementById('tabBar');
+
+    if (nav === 'giorni') {
+      document.getElementById('nav-giorni').classList.add('active');
+      tabBar.style.display = 'flex';
+      DAYS.forEach(d => document.getElementById(d).classList.remove('active'));
+      document.getElementById(currentDay).classList.add('active');
+      document.getElementById('consigli').classList.remove('active');
+      document.getElementById('checklist').classList.remove('active');
+    } else if (nav === 'consigli') {
+      document.getElementById('nav-consigli').classList.add('active');
+      tabBar.style.display = 'none';
+      DAYS.forEach(d => document.getElementById(d).classList.remove('active'));
+      document.getElementById('consigli').classList.add('active');
+      document.getElementById('checklist').classList.remove('active');
+    } else if (nav === 'spesa') {
+      document.getElementById('nav-spesa').classList.add('active');
+      tabBar.style.display = 'none';
+      DAYS.forEach(d => document.getElementById(d).classList.remove('active'));
+      document.getElementById('consigli').classList.remove('active');
+      document.getElementById('checklist').classList.add('active');
+      updateProgress();
+    }
+  }
+
+  // Checklist
+  function toggleCheck(item) {
+    item.classList.toggle('checked');
+    updateProgress();
+  }
+
+  function updateProgress() {
+    const all = document.querySelectorAll('.check-item');
+    const checked = document.querySelectorAll('.check-item.checked');
+    const pct = all.length ? (checked.length / all.length * 100) : 0;
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('progressText').textContent = checked.length + ' / ' + all.length;
+  }
+
+  function resetChecklist() {
+    document.querySelectorAll('.check-item.checked').forEach(i => i.classList.remove('checked'));
+    updateProgress();
+  }
+
+  // Init
+  document.getElementById('nav-giorni').classList.add('active');
+  updateProgress();
+</script>
+</body>
+</html>
